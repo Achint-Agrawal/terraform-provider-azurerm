@@ -10,12 +10,14 @@ import (
 	"github.com/hashicorp/go-azure-sdk/resource-manager/mongocluster/2026-06-01/mongoclusters"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/mongocluster/2026-06-01/users"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/common"
+	"github.com/hashicorp/terraform-provider-azurerm/internal/services/mongocluster/azuresdkhacks"
 )
 
 type Client struct {
-	FirewallRulesClient *firewallrules.FirewallRulesClient
-	MongoClustersClient *mongoclusters.MongoClustersClient
-	UsersClient         *users.UsersClient
+	FirewallRulesClient  *firewallrules.FirewallRulesClient
+	MongoClustersClient  *mongoclusters.MongoClustersClient
+	PlannedPromoteClient *azuresdkhacks.PlannedPromoteClient
+	UsersClient          *users.UsersClient
 }
 
 func NewClient(o *common.ClientOptions) (*Client, error) {
@@ -31,6 +33,12 @@ func NewClient(o *common.ClientOptions) (*Client, error) {
 	}
 	o.Configure(mongoClustersClient.Client, o.Authorizers.ResourceManager)
 
+	plannedPromoteClient, err := azuresdkhacks.NewPlannedPromoteClient(o.Environment.ResourceManager)
+	if err != nil {
+		return nil, fmt.Errorf("building PlannedPromote client: %+v", err)
+	}
+	o.Configure(plannedPromoteClient.Client, o.Authorizers.ResourceManager)
+
 	usersClient, err := users.NewUsersClientWithBaseURI(o.Environment.ResourceManager)
 	if err != nil {
 		return nil, fmt.Errorf("building Users client: %+v", err)
@@ -38,8 +46,9 @@ func NewClient(o *common.ClientOptions) (*Client, error) {
 	o.Configure(usersClient.Client, o.Authorizers.ResourceManager)
 
 	return &Client{
-		FirewallRulesClient: firewallRulesClient,
-		MongoClustersClient: mongoClustersClient,
-		UsersClient:         usersClient,
+		FirewallRulesClient:  firewallRulesClient,
+		MongoClustersClient:  mongoClustersClient,
+		PlannedPromoteClient: plannedPromoteClient,
+		UsersClient:          usersClient,
 	}, nil
 }

@@ -10,6 +10,8 @@ description: |-
 
 Manages a MongoDB Cluster using vCore Architecture.
 
+-> **Note:** To promote a replica to primary, use the [`azurerm_mongo_cluster_promote` action](../actions/mongo_cluster_promote.html). Promotion is an imperative operation and is not configured as a persistent property of this resource.
+
 ## Example Usage
 
 ```hcl
